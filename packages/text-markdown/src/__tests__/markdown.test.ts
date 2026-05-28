@@ -1100,6 +1100,32 @@ describe('markupToMarkdown', () => {
           }
         ]
       }
+    },
+    {
+      name: 'inline comment mark',
+      markdown: 'commented text',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'commented text',
+                marks: [
+                  {
+                    type: 'inline-comment',
+                    attrs: {
+                      thread: 'thread-1'
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 

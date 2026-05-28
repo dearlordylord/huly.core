@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix markdown serialization for inline comment marks.",
+      "type": "patch",
+      "packageName": "@hcengineering/text-markdown"
+    }
+  ],
+  "packageName": "@hcengineering/text-markdown",
+  "email": "igor.loskutoff@gmail.com"
+}

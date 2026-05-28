@@ -421,6 +421,13 @@ export const storeMarks: Record<string, MarkProcessor> = {
     mixable: false,
     expelEnclosingWhitespace: false,
     escape: false
+  },
+  'inline-comment': {
+    open: '',
+    close: '',
+    mixable: false,
+    expelEnclosingWhitespace: false,
+    escape: true
   }
 }
 
