@@ -14,20 +14,48 @@
 //
 import { type Timestamp } from './classes'
 
+const dayTimeZone = 'Europe/London'
+const dayFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: dayTimeZone,
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric'
+})
+
+function parseCalendarPart (partName: string, partValue: string): number {
+  const value = Number(partValue)
+  if (!Number.isInteger(value)) {
+    throw new Error(`Unable to parse ${dayTimeZone} calendar ${partName}`)
+  }
+  return value
+}
+
 export function getDay (time: Timestamp): Timestamp {
   const date: Date = new Date(time)
   return convertToDay(date).getTime()
 }
 
 export function convertToDay (date: Date): Date {
-  const originalDay: number = date.getDate()
-  const convertedDate: Date = new Date(date)
-  // Set 12 AM UTC time, since it will be the same day in most timezones
-  convertedDate.setUTCHours(12, 0, 0, 0)
-  if (convertedDate.getDate() !== originalDay) {
-    convertedDate.setDate(originalDay)
+  let year: number | undefined
+  let month: number | undefined
+  let day: number | undefined
+
+  for (const part of dayFormatter.formatToParts(date)) {
+    if (part.type === 'year') {
+      year = parseCalendarPart(part.type, part.value)
+    } else if (part.type === 'month') {
+      month = parseCalendarPart(part.type, part.value)
+    } else if (part.type === 'day') {
+      day = parseCalendarPart(part.type, part.value)
+    }
   }
-  return convertedDate
+
+  if (year === undefined || month === undefined || day === undefined) {
+    throw new Error(`Unable to resolve ${dayTimeZone} calendar day`)
+  }
+
+  // Set noon UTC, since it will be the same day in most timezones.
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0))
 }
 
 export function getHour (time: Timestamp): Timestamp {

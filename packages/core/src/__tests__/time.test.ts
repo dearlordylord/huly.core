@@ -16,6 +16,8 @@
 import { type Timestamp } from '../classes'
 import { getDay, convertToDay } from '..'
 
+const dayTimeZone = 'Europe/London'
+
 const supportedTimezones: string[] = [
   'Europe/Andorra',
   'Asia/Dubai',
@@ -348,18 +350,22 @@ const supportedTimezones: string[] = [
   'Africa/Johannesburg'
 ]
 
+function localeDate (date: Date, timezone: string): string {
+  return date.toLocaleDateString('en-US', { timeZone: timezone })
+}
+
 function testGetDay (date: Date, timezone: string): void {
   const timestamp: Timestamp = getDay(date.getTime())
   const convertedDate: Date = new Date(timestamp)
-  const originalLocaleDate: string = date.toLocaleDateString('en-US', { timeZone: 'Europe/London' })
-  const convertedLocaleDate: string = convertedDate.toLocaleDateString('en-US', { timeZone: timezone })
+  const originalLocaleDate: string = localeDate(date, dayTimeZone)
+  const convertedLocaleDate: string = localeDate(convertedDate, timezone)
   expect(convertedLocaleDate).toEqual(originalLocaleDate)
 }
 
 function testConvertToDay (date: Date, timezone: string): void {
   const convertedDate: Date = convertToDay(date)
-  const originalLocaleDate: string = date.toLocaleDateString('en-US', { timeZone: 'Europe/London' })
-  const convertedLocaleDate: string = convertedDate.toLocaleDateString('en-US', { timeZone: timezone })
+  const originalLocaleDate: string = localeDate(date, dayTimeZone)
+  const convertedLocaleDate: string = localeDate(convertedDate, timezone)
   expect(convertedLocaleDate).toEqual(originalLocaleDate)
 }
 
@@ -389,10 +395,23 @@ describe('time', () => {
     'dates are matched for time [h: %p, m: %p, s: %p, ms: %p]',
     (hours: number, minutes: number, seconds: number, milliSeconds: number) => {
       const date: Date = new Date()
-      const expectedDay: number = date.getDate()
       date.setHours(hours, minutes, seconds, milliSeconds)
       const convertedDate: Date = convertToDay(date)
-      expect(convertedDate.getDate()).toEqual(expectedDay)
+      expect(localeDate(convertedDate, dayTimeZone)).toEqual(localeDate(date, dayTimeZone))
+      expect(convertedDate.getUTCHours()).toEqual(12)
+      expect(convertedDate.getUTCMinutes()).toEqual(0)
+      expect(convertedDate.getUTCSeconds()).toEqual(0)
+      expect(convertedDate.getUTCMilliseconds()).toEqual(0)
     }
   )
+
+  it.each([
+    [new Date('2025-01-25T00:00:00.000Z'), '2025-01-25T12:00:00.000Z'],
+    [new Date('2024-06-12T23:30:00.000Z'), '2024-06-13T12:00:00.000Z']
+  ])('normalizes the London calendar day to noon UTC for %p', (date: Date, expected: string) => {
+    const expectedTimestamp = Date.parse(expected)
+
+    expect(convertToDay(date).getTime()).toEqual(expectedTimestamp)
+    expect(getDay(date.getTime())).toEqual(expectedTimestamp)
+  })
 })
